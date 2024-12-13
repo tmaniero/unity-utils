@@ -148,8 +148,12 @@ namespace Nothke.Utils
         {
             // This fixes flickering (by @guycalledfrank)
             // (because there's some switching back and forth between cameras, I don't fully understand)
+#if !UNITY_EDITOR
             if (Camera.current != null)
                 projectionMatrix *= Camera.current.worldToCameraMatrix.inverse;
+            else if (Camera.main != null)
+                projectionMatrix *= Camera.main.worldToCameraMatrix.inverse;
+#endif
 
             // Remember the current texture and make our own active
             prevRT = RenderTexture.active;
@@ -244,8 +248,12 @@ namespace Nothke.Utils
 
             // This fixes flickering (by @guycalledfrank)
             // (because there's some switching back and forth between cameras, I don't fully understand)
+#if !UNITY_EDITOR
             if (Camera.current != null)
                 projectionMatrix *= Camera.current.worldToCameraMatrix.inverse;
+            else if (Camera.main != null)
+                projectionMatrix *= Camera.main.worldToCameraMatrix.inverse;
+#endif
 
             // Remember the current texture and set our own as "active".
             RenderTexture prevRT = RenderTexture.active;
