@@ -116,23 +116,23 @@ namespace Nothke.Utils
 
         static RenderTexture prevRT;
 
-        public static void BeginOrthoRendering(this RenderTexture rt, float zBegin = -100, float zEnd = 100)
+        public static void BeginOrthoRendering(this RenderTexture rt, Camera cameraActive, float zBegin = -100, float zEnd = 100)
         {
             // Create an orthographic matrix (for 2D rendering)
             Matrix4x4 projectionMatrix = Matrix4x4.Ortho(0, 1, 0, 1, zBegin, zEnd);
 
-            rt.BeginRendering(projectionMatrix);
+            rt.BeginRendering(cameraActive, projectionMatrix);
         }
 
-        public static void BeginPixelRendering(this RenderTexture rt, float zBegin = -100, float zEnd = 100)
+        public static void BeginPixelRendering(this RenderTexture rt, Camera cameraActive, float zBegin = -100, float zEnd = 100)
         {
             Matrix4x4 projectionMatrix = Matrix4x4.Ortho(0, rt.width, 0, rt.height, zBegin, zEnd);
 
-            rt.BeginRendering(projectionMatrix);
+            rt.BeginRendering(cameraActive, projectionMatrix);
         }
 
         public static void BeginPerspectiveRendering(
-            this RenderTexture rt, float fov, in Vector3 position, in Quaternion rotation,
+            this RenderTexture rt, Camera cameraActive, float fov, in Vector3 position, in Quaternion rotation,
             float zNear = 0.01f, float zFar = 1000f)
         {
             float aspect = (float)rt.width / rt.height;
@@ -141,19 +141,13 @@ namespace Nothke.Utils
 
             Matrix4x4 cameraMatrix = (projectionMatrix * viewMatrix.inverse);
 
-            rt.BeginRendering(cameraMatrix);
+            rt.BeginRendering(cameraActive, cameraMatrix);
         }
 
-        public static void BeginRendering(this RenderTexture rt, Matrix4x4 projectionMatrix)
+        public static void BeginRendering(this RenderTexture rt, Camera cameraActive, Matrix4x4 projectionMatrix)
         {
-            // This fixes flickering (by @guycalledfrank)
-            // (because there's some switching back and forth between cameras, I don't fully understand)
-#if !UNITY_EDITOR
-            if (Camera.current != null)
-                projectionMatrix *= Camera.current.worldToCameraMatrix.inverse;
-            else if (Camera.main != null)
-                projectionMatrix *= Camera.main.worldToCameraMatrix.inverse;
-#endif
+            if (cameraActive != null)
+                projectionMatrix *= cameraActive.worldToCameraMatrix.inverse;
 
             // Remember the current texture and make our own active
             prevRT = RenderTexture.active;
@@ -248,12 +242,9 @@ namespace Nothke.Utils
 
             // This fixes flickering (by @guycalledfrank)
             // (because there's some switching back and forth between cameras, I don't fully understand)
-#if !UNITY_EDITOR
+            // not working on Unity6
             if (Camera.current != null)
                 projectionMatrix *= Camera.current.worldToCameraMatrix.inverse;
-            else if (Camera.main != null)
-                projectionMatrix *= Camera.main.worldToCameraMatrix.inverse;
-#endif
 
             // Remember the current texture and set our own as "active".
             RenderTexture prevRT = RenderTexture.active;
