@@ -60,7 +60,11 @@ public abstract class SingletonScriptableObject<T> : ScriptableObject where T : 
         }
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static SingletonScriptableObject()
+    {
+        FindAndInit();
+    }
+
     static void FindAndInit()
     {
         var objs = Resources.FindObjectsOfTypeAll<T>();
